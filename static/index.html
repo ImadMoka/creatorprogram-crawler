@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Creator Program</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#review" aria-label="Creator Program home">
+          <span class="brand-mark">CP</span>
+          <span><strong>Creator Program</strong><small>Crawler workspace</small></span>
+        </a>
+
+        <nav class="primary-nav" aria-label="Workspace">
+          <button class="nav-item active" data-tab-target="review" type="button">
+            <i data-lucide="users"></i><span>Review</span>
+          </button>
+          <button class="nav-item" data-tab-target="scraper" type="button">
+            <i data-lucide="scan-search"></i><span>Scraper</span>
+          </button>
+          <button class="nav-item" data-tab-target="contacts" type="button">
+            <i data-lucide="send"></i><span>Contact Queue</span>
+            <span class="nav-count" id="contactNavCount">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-status">
+          <div><span class="live-dot" id="sidebarLiveDot"></span><strong id="sidebarRunState">Idle</strong></div>
+          <p id="sidebarRunLine">Ready to scrape</p>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <section class="tab-page active" data-tab-page="review">
+          <header class="page-header">
+            <div><p class="eyebrow">Creator database</p><h1>Review creators</h1></div>
+            <div class="page-count"><strong id="reviewTotal">0</strong><span>creators</span></div>
+          </header>
+
+          <section class="filter-strip" aria-label="Creator filters">
+            <div class="segmented" id="reviewAppMode" aria-label="App classification">
+              <button class="selected" data-value="__WITH_APP__" data-tooltip="Show creators classified with an app" type="button">App</button>
+              <button data-value="__NO_APP__" data-tooltip="Show creators classified without an app" type="button">No App</button>
+            </div>
+            <details class="multi-select" id="reviewLanguageFilter">
+              <summary data-tooltip="Filter creators by one or more languages"><i data-lucide="languages"></i><span>All languages</span><i data-lucide="chevron-down"></i></summary>
+              <div class="select-menu" data-options></div>
+            </details>
+            <details class="multi-select" id="reviewAppFilter">
+              <summary data-tooltip="Filter creators by one or more promoted apps"><i data-lucide="blocks"></i><span>All apps</span><i data-lucide="chevron-down"></i></summary>
+              <div class="select-menu searchable"><input data-search placeholder="Find app" /><div data-options></div></div>
+            </details>
+            <button class="icon-button" id="advancedToggle" type="button" title="Advanced filters" aria-label="Advanced filters">
+              <i data-lucide="sliders-horizontal"></i>
+            </button>
+            <details class="sort-menu">
+              <summary class="icon-button" title="Sort creators" aria-label="Sort creators"><i data-lucide="arrow-up-down"></i></summary>
+              <div class="popover-menu">
+                <label>Sort by<select id="reviewSort"><option value="median_views">Median views</option><option value="avg_views">Average views</option><option value="followers">Followers</option><option value="scraped_at">Recently scraped</option></select></label>
+                <div class="segmented compact" id="reviewSortDir"><button class="selected" data-value="desc" type="button">High first</button><button data-value="asc" type="button">Low first</button></div>
+              </div>
+            </details>
+          </section>
+
+          <section class="advanced-filters" id="advancedFilters" hidden>
+            <div class="range-field"><span>Followers</span><input id="reviewMinFollowers" type="number" min="0" placeholder="Min" /><span>to</span><input id="reviewMaxFollowers" type="number" min="0" placeholder="Max" /></div>
+            <div class="range-field"><span>Median views</span><input id="reviewMinMedian" type="number" min="0" placeholder="Min" /><span>to</span><input id="reviewMaxMedian" type="number" min="0" placeholder="Max" /></div>
+            <div class="range-field"><span>Average views</span><input id="reviewMinAvg" type="number" min="0" placeholder="Min" /><span>to</span><input id="reviewMaxAvg" type="number" min="0" placeholder="Max" /></div>
+            <label class="select-field"><span>Email</span><select id="reviewEmail"><option value="">Any</option><option value="has">Has email</option><option value="none">No email</option></select></label>
+            <button class="text-button" id="clearReviewFilters" type="button">Clear</button>
+          </section>
+
+          <section class="data-surface">
+            <div class="table-scroll creator-table-wrap">
+              <table class="data-table creator-table">
+                <thead><tr><th>Creator</th><th title="Click an app to edit it">App</th><th>Language</th><th title="TikTok followers">Followers</th><th title="Median views across the latest 30 posts">Median views</th><th title="Average views across the latest 30 posts">Avg views</th><th title="Click an email to edit it">Email</th><th class="actions-col"></th></tr></thead>
+                <tbody id="reviewRows"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="reviewEmpty" hidden><i data-lucide="search-x"></i><strong>No creators found</strong><span>Change the active filters and try again.</span></div>
+            <div class="pager"><span id="reviewRange">0 results</span><div><button class="icon-button" id="reviewPrev" type="button" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left"></i></button><button class="icon-button" id="reviewNext" type="button" aria-label="Next page" title="Next page"><i data-lucide="chevron-right"></i></button></div></div>
+          </section>
+        </section>
+
+        <section class="tab-page" data-tab-page="scraper">
+          <header class="page-header">
+            <div><p class="eyebrow">Discovery engine</p><h1>Scraper</h1></div>
+            <span class="run-state" id="runPill" data-state="idle"><span></span>Idle</span>
+          </header>
+
+          <section class="run-console">
+            <div class="run-settings">
+              <details class="multi-select wide" id="scraperCountryFilter"><summary data-tooltip="Filter by the parent creator's market, inferred from its classified language"><i data-lucide="map-pin"></i><span>All parent countries</span><i data-lucide="chevron-down"></i></summary><div class="select-menu" data-options></div></details>
+              <details class="multi-select wide" id="scraperAppFilter"><summary data-tooltip="Use selected apps, or leave empty to use the whitelist"><i data-lucide="list-filter"></i><span>Whitelist only</span><i data-lucide="chevron-down"></i></summary><div class="select-menu searchable"><input data-search placeholder="Find app" aria-label="Search apps" /><div data-options></div></div></details>
+              <label><span>Limit</span><input id="runLimit" type="number" min="1" value="20" title="Maximum creators to process in this run" /></label>
+              <label><span>Concurrency</span><input id="runConcurrency" type="number" min="1" max="25" value="10" title="Creators processed at the same time" /></label>
+            </div>
+            <label class="batch-field"><span>Handle batch</span><textarea id="runHandles" rows="3" placeholder="@creator_one&#10;@creator_two"></textarea></label>
+            <div class="run-actions"><button class="primary-button" id="runButton" type="button"><i data-lucide="play"></i>Run scraper</button><button class="secondary-button" id="stopButton" type="button" disabled><i data-lucide="square"></i>Stop</button><p id="runLine">Ready</p></div>
+          </section>
+
+          <section class="workspace-section queue-section">
+            <div class="section-header"><div><h2>Queue</h2><div class="metric-row" id="queueCounts"></div></div><div class="section-tools"><div class="segmented compact" id="queueViewMode" aria-label="Queue view"><button class="selected" data-value="handles" type="button">Handles</button><button data-value="sources" type="button">Sources only</button></div><select id="queueStatus"><option value="pending">Pending</option><option value="retry">Retry</option><option value="processing">Processing</option><option value="failed">Failed</option><option value="excluded">Excluded</option><option value="done">Done</option><option value="">All statuses</option></select><button class="icon-button" id="refreshQueue" type="button" aria-label="Refresh queue" title="Refresh queue"><i data-lucide="refresh-cw"></i></button></div></div>
+            <div class="table-scroll queue-table-wrap"><table class="data-table queue-table" id="queueTable"><thead id="queueHead"><tr><th>Handle</th><th title="Parent creator that discovered this handle">Source</th><th title="Parent market inferred from the source creator's classified language">Parent country</th><th>App</th><th title="App queue policy">Priority</th><th>Status</th><th title="Number of crawl attempts">Attempts</th></tr></thead><tbody id="queueRows"></tbody></table></div>
+            <div class="pager"><span id="queueRange">0 results</span><div><select id="queueLimit"><option value="25">25 rows</option><option value="50" selected>50 rows</option><option value="100">100 rows</option></select><button class="icon-button" id="queuePrev" type="button" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left"></i></button><button class="icon-button" id="queueNext" type="button" aria-label="Next page" title="Next page"><i data-lucide="chevron-right"></i></button></div></div>
+          </section>
+
+          <div class="scraper-grid">
+            <section class="workspace-section app-policy-section">
+              <div class="section-header"><div><h2>App policy</h2><p>Whitelist is crawled first. Blacklist is excluded.</p></div><form id="appForm" class="add-form"><input id="newAppName" placeholder="New app" /><button class="icon-button" type="submit" aria-label="Add app" title="Add app"><i data-lucide="plus"></i></button></form></div>
+              <div class="policy-filter"><input id="policySearch" placeholder="Search apps" /><div class="segmented compact" id="policyMode"><button class="selected" data-value="all" type="button">All</button><button data-value="whitelist" type="button">Whitelist</button><button data-value="blacklist" type="button">Blacklist</button></div></div>
+              <div class="policy-list" id="policyList"></div>
+            </section>
+
+            <section class="workspace-section seed-section">
+              <div class="section-header"><div><h2>Add starting creator</h2><p>Seed a handle with an optional expected app.</p></div></div>
+              <form id="seedForm" class="stack-form"><label><span>TikTok handle</span><input id="seedHandle" placeholder="@creator" required /></label><label><span>Expected app</span><input id="seedApp" placeholder="Optional" list="appNames" /></label><button class="secondary-button" type="submit"><i data-lucide="user-plus"></i>Add to queue</button></form>
+            </section>
+          </div>
+
+          <details class="workspace-section frontier-section">
+            <summary><span><i data-lucide="network"></i><strong>Frontier crawl</strong><small id="frontierBucketCount">0 seeds</small></span><i data-lucide="chevron-down"></i></summary>
+            <div class="frontier-content">
+              <form id="frontierSeedForm" class="inline-fields"><input id="frontierHandle" placeholder="@creator" required /><button class="secondary-button" type="submit"><i data-lucide="plus"></i>Add seed</button></form>
+              <div class="inline-fields"><label><span>Limit</span><input id="frontierLimit" type="number" min="1" value="25" /></label><label><span>Concurrency</span><input id="frontierConcurrency" type="number" min="1" max="25" value="10" title="Creators processed at the same time" /></label><label class="check-field" title="Re-scrape bucket seeds before expanding one step"><input id="frontierRefreshSeeds" type="checkbox" checked /><span>Refresh seeds</span></label><button class="primary-button" id="frontierRunButton" type="button"><i data-lucide="play"></i>Run frontier</button><button class="secondary-button" id="frontierStopButton" type="button"><i data-lucide="square"></i>Stop</button></div>
+              <div class="frontier-columns"><div><div class="mini-header"><strong>Bucket</strong><span id="frontierRunPill">Idle</span></div><div class="table-scroll compact-table"><table class="data-table"><thead><tr><th>Handle</th><th>App</th><th></th></tr></thead><tbody id="frontierBucketRows"></tbody></table></div></div><div><div class="mini-header"><strong>Latest run</strong><span id="frontierRunCounts"></span></div><div class="table-scroll compact-table"><table class="data-table"><thead><tr><th>Handle</th><th>Depth</th><th>Status</th><th></th></tr></thead><tbody id="frontierRows"></tbody></table></div></div></div>
+            </div>
+          </details>
+        </section>
+
+        <section class="tab-page" data-tab-page="contacts">
+          <header class="page-header"><div><p class="eyebrow">Outreach pipeline</p><h1>Contact Queue</h1></div><div class="page-count"><strong id="contactTotal">0</strong><span>creators</span></div></header>
+          <section class="filter-strip">
+            <div class="segmented" id="contactStatusFilter"><button class="selected" data-value="to_contact" type="button">To contact</button><button data-value="contacted" type="button">Contacted</button><button data-value="all" type="button">All</button></div>
+            <details class="multi-select" id="contactCountryFilter"><summary><i data-lucide="map-pin"></i><span>All countries</span><i data-lucide="chevron-down"></i></summary><div class="select-menu" data-options></div></details>
+            <details class="multi-select" id="contactLanguageFilter"><summary><i data-lucide="languages"></i><span>All languages</span><i data-lucide="chevron-down"></i></summary><div class="select-menu" data-options></div></details>
+            <details class="multi-select" id="contactAppFilter"><summary><i data-lucide="blocks"></i><span>All apps</span><i data-lucide="chevron-down"></i></summary><div class="select-menu searchable"><input data-search placeholder="Find app" /><div data-options></div></div></details>
+          </section>
+          <section class="data-surface">
+            <div class="table-scroll contact-table-wrap"><table class="data-table contact-table"><thead><tr><th>Creator</th><th>App</th><th>Country</th><th>Followers</th><th>Median views</th><th>Email</th><th>State</th><th class="actions-col"></th></tr></thead><tbody id="contactRows"></tbody></table></div>
+            <div class="empty-state" id="contactEmpty" hidden><i data-lucide="inbox"></i><strong>Queue is clear</strong><span>Mark creators for contact from the Review tab.</span></div>
+            <div class="pager"><span id="contactRange">0 results</span><div><button class="icon-button" id="contactPrev" type="button" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left"></i></button><button class="icon-button" id="contactNext" type="button" aria-label="Next page" title="Next page"><i data-lucide="chevron-right"></i></button></div></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="classificationDialog">
+      <form method="dialog" class="dialog-card" id="classificationForm">
+        <div class="dialog-header"><div><p class="eyebrow">Classification</p><h2 id="classificationHandle">Creator</h2></div><button class="icon-button" value="cancel" aria-label="Close" title="Close"><i data-lucide="x"></i></button></div>
+        <label><span>Promoted app</span><input id="classificationApp" list="appNames" placeholder="No app" /></label>
+        <div class="dialog-actions"><button class="danger-button" id="clearClassification" type="button">Mark no app</button><button class="primary-button" id="saveClassification" type="button">Save classification</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="emailDialog">
+      <form method="dialog" class="dialog-card" id="emailForm">
+        <div class="dialog-header"><div><p class="eyebrow">Contact details</p><h2 id="emailHandle">Creator</h2></div><button class="icon-button" value="cancel" aria-label="Close" title="Close"><i data-lucide="x"></i></button></div>
+        <label><span>Email address</span><input id="creatorEmail" type="email" autocomplete="off" placeholder="Unknown" /></label>
+        <div class="dialog-actions"><button class="danger-button" id="clearEmail" type="button">Clear email</button><button class="primary-button" id="saveEmail" type="button">Save email</button></div>
+      </form>
+    </dialog>
+
+    <datalist id="appNames"></datalist>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <div id="hoverTooltip" role="tooltip"></div>
+    <script src="/lucide.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
